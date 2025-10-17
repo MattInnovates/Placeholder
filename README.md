@@ -185,6 +185,19 @@ const imageUrl = getPlaceholder(400, 300, {
 
 ## 💻 Development
 
+### Environment Setup
+
+1. **Copy environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure environment variables (optional):**
+   ```bash
+   # Set custom port (default: 3000)
+   PORT=8080
+   ```
+
 ### Scripts
 
 - `npm start`: Start the production server
