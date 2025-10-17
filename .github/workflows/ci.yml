@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run security audit
+      run: npm audit --audit-level=high
+      
+    - name: Check for outdated dependencies
+      run: npm outdated || true
+      
+    - name: Start server and test basic functionality
+      run: |
+        npm start &
+        SERVER_PID=$!
+        sleep 5
+        
+        # Test health check endpoint
+        curl -f http://localhost:3000/ || exit 1
+        
+        # Test basic placeholder generation
+        curl -f -o test-image.png "http://localhost:3000/placeholder?size=100x100" || exit 1
+        
+        # Test with custom parameters
+        curl -f -o test-image2.jpg "http://localhost:3000/placeholder?size=200x150&bg=ff6b6b&color=ffffff&format=jpg" || exit 1
+        
+        # Clean up
+        kill $SERVER_PID
+        rm -f test-image.png test-image2.jpg
+        
+    - name: Test alternative URL format
+      run: |
+        npm start &
+        SERVER_PID=$!
+        sleep 5
+        
+        # Test alternative format
+        curl -f -o test-alt.png "http://localhost:3000/300x200?bg=blue" || exit 1
+        
+        # Clean up  
+        kill $SERVER_PID
+        rm -f test-alt.png
