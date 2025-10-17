@@ -130,3 +130,5 @@ Thumbs.db
 
 # Sharp cache
 .sharp/
+
+.github/
